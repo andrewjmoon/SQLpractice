@@ -1,0 +1,388 @@
+Section 11:
+
+SELECT * FROM books
+WHERE released_year != 2017;
+
+SELECT * FROM books
+WHERE title NOT LIKE '%e%';
+
+SELECT * FROM books
+WHERE released_year > 2005;
+ 
+SELECT * FROM books
+WHERE pages > 500;
+
+SELECT * FROM books
+WHERE pages < 200;
+ 
+SELECT * FROM books
+WHERE released_year < 2000;
+ 
+SELECT * FROM books
+WHERE released_year <= 1985;
+
+SELECT title, author_lname, released_year FROM books
+WHERE released_year > 2010
+AND author_lname = 'Eggers';
+ 
+SELECT title, author_lname, released_year FROM books
+WHERE released_year > 2010
+AND author_lname = 'Eggers'
+AND title LIKE '%novel%';
+
+select title from books where char_length(title) > 30 AND pages > 500;
+
+SELECT title, pages FROM books 
+WHERE CHAR_LENGTH(title) > 30
+AND pages > 500;
+ 
+SELECT title, author_lname FROM books
+WHERE author_lname='Eggers' AND
+released_year > 2010;
+ 
+SELECT title, author_lname, released_year FROM books
+WHERE author_lname='Eggers' OR
+released_year > 2010;
+ 
+ 
+SELECT title, pages FROM books
+WHERE pages < 200 
+OR title LIKE '%stories%';
+
+SELECT title, released_year FROM books
+WHERE released_year <= 2015
+AND released_year >= 2004;
+ 
+SELECT title, released_year FROM books
+WHERE released_year BETWEEN 2004 AND 2014;
+
+SELECT * FROM people WHERE birthtime 
+BETWEEN CAST('12:00:00' AS TIME) 
+AND CAST('16:00:00' AS TIME);
+ 
+ 
+SELECT * FROM people WHERE HOUR(birthtime)
+BETWEEN 12 AND 16;
+
+SELECT title, author_lname FROM books
+WHERE author_lname = 'Carver' 
+OR author_lname = 'Lahiri'
+OR author_lname = 'Smith';
+ 
+SELECT title, author_lname FROM books
+WHERE author_lname IN ('Carver', 'Lahiri', 'Smith');
+ 
+SELECT title, author_lname FROM books
+WHERE author_lname NOT IN ('Carver', 'Lahiri', 'Smith');
+ 
+ 
+SELECT title, released_year FROM books
+WHERE released_year >= 2000 
+AND released_year % 2 = 1; (meaning search for odd numbers after 2000)
+
+OR You can do:
+
+SELECT title, released_year FROM books
+WHERE released_year >= 2000 
+AND released_year % 2 != 0; (meaning search for odd numbers after 2000)
+
+CASE EXAMPLES:
+
+SELECT title, released_year,
+CASE
+	WHEN released_year >= 2000 THEN 'modern lit'
+    ELSE '20th century lit' 
+END AS genre
+FROM books;
+ 
+ 
+SELECT 
+    title,
+    stock_quantity,
+    CASE
+        WHEN stock_quantity BETWEEN 0 AND 40 THEN '*'
+        WHEN stock_quantity BETWEEN 41 AND 70 THEN '**'
+        WHEN stock_quantity BETWEEN 71 AND 100 THEN '***'
+        WHEN stock_quantity BETWEEN 101 AND 140 THEN '****'
+        ELSE '*****'
+    END AS stock
+FROM
+    books;
+ 
+ 
+SELECT 
+    title,
+    stock_quantity,
+    CASE
+        WHEN stock_quantity <= 40 THEN '*'
+        WHEN stock_quantity <= 70 THEN '**'
+        WHEN stock_quantity <= 100 THEN '***'
+        WHEN stock_quantity <= 140 THEN '****'
+        ELSE '*****'
+    END AS stock
+FROM
+    books;
+
+SOLUTIONS FOR SECTION 11 
+
+SELECT * FROM books WHERE released_year < 1980;
+ 
+SELECT * FROM books 
+WHERE author_lname = 'Eggers'
+OR author_lname = 'Chabon';
+ 
+SELECT * FROM books
+WHERE author_lname = 'Lahiri'
+AND released_year > 2000;
+ 
+SELECT * FROM books
+WHERE pages >= 100 
+AND pages <= 200;
+ 
+SELECT * FROM books
+WHERE pages BETWEEN 100 and 200;
+ 
+SELECT title, author_lname FROM books
+WHERE author_lname LIKE 'C%'
+OR author_lname LIKE 'S%';
+ 
+SELECT title, author_lname
+FROM books WHERE SUBSTR(author_lname, 1, 1) in ('C', 'S');
+ 
+SELECT title, author_lname,
+CASE
+    WHEN title LIKE '%stories%' THEN 'Short Stories'
+    WHEN title = 'Just Kids' THEN 'Memoir' 
+    WHEN title = 'A Heartbreaking Work of Staggering Genius' THEN 'Memior'
+    ELSE 'Novel'
+END AS type
+FROM books;
+ 
+ 
+SELECT author_fname, author_lname,
+	CASE
+        WHEN COUNT(*) = 1 THEN '1 book'
+        ELSE CONCAT(COUNT(*), ' books')
+	END AS count
+FROM books
+WHERE author_lname IS NOT NULL
+GROUP BY author_fname, author_lname;
+
+SECTION 12 - constraints:
+
+CREATE TABLE users (
+	username VARCHAR(20) NOT NULL,
+    age INT CHECK (age > 0)
+);
+ 
+CREATE TABLE palindromes (
+  word VARCHAR(100) CHECK(REVERSE(word) = word)
+)
+
+With CONSTRAINTS:
+
+CREATE TABLE users2 (
+    username VARCHAR(20) NOT NULL,
+    age INT,
+    CONSTRAINT age_not_negative CHECK (age >= 0)
+);
+ 
+CREATE TABLE palindromes2 (
+  word VARCHAR(100),
+  CONSTRAINT word_is_palindrome CHECK(REVERSE(word) = word)
+);
+
+CREATE TABLE companies (
+    name VARCHAR(255) NOT NULL,
+    address VARCHAR(255) NOT NULL,
+    CONSTRAINT name_address UNIQUE (name , address)
+);
+ 
+CREATE TABLE houses (
+  purchase_price INT NOT NULL,
+  sale_price INT NOT NULL,
+  CONSTRAINT sprice_gt_pprice CHECK(sale_price >= purchase_price)
+);
+
+ALTER TABLE companies 
+ADD COLUMN phone VARCHAR(15);
+ 
+ALTER TABLE companies
+ADD COLUMN employee_count INT NOT NULL DEFAULT 1;
+
+ALTER TABLE companies DROP COLUMN phone;
+
+RENAME TABLE companies to suppliers;
+
+
+ALTER TABLE suppliers RENAME TO companies;
+
+
+ALTER TABLE companies
+RENAME COLUMN name TO company_name;
+
+ALTER TABLE companies
+MODIFY company_name VARCHAR(100) DEFAULT 'unknown';
+
+
+ALTER TABLE suppliers
+CHANGE business biz_name VARCHAR(50);
+
+ALTER TABLE houses 
+ADD CONSTRAINT positive_pprice CHECK (purchase_price >= 0);
+
+
+ALTER TABLE houses DROP CONSTRAINT positive_pprice;
+
+Section - 13 SQL JOINS
+
+SELECT id FROM customers WHERE last_name = 'George';
+SELECT * FROM orders WHERE customer_id = 1;
+ 
+SELECT * FROM orders 
+WHERE customer_id = (SELECT id FROM customers WHERE last_name = 'George');
+ 
+-- To perform a (kind of useless) cross join:
+SELECT * FROM customers, orders;
+
+-- Our first inner join!
+SELECT * FROM customers
+JOIN orders ON orders.customer_id = customers.id;
+ 
+SELECT first_name, last_name, order_date, amount FROM customers
+JOIN orders ON orders.customer_id = customers.id;
+ 
+-- The order doesn't matter here:
+SELECT * FROM orders
+JOIN customers ON customers.id = orders.customer_id;
+
+SELECT 
+    first_name, last_name, SUM(amount) AS total
+FROM
+    customers
+        JOIN
+    orders ON orders.customer_id = customers.id
+GROUP BY first_name , last_name
+ORDER BY total;
+
+SELECT 
+    first_name, last_name, order_date, amount
+FROM
+    customers
+        LEFT JOIN
+    orders ON orders.customer_id = customers.id;
+ 
+ 
+SELECT 
+    order_date, amount, first_name, last_name
+FROM
+    orders
+        LEFT JOIN
+    customers ON orders.customer_id = customers.id;
+
+IFNULL example:
+SELECT 
+    first_name, 
+    last_name, 
+    IFNULL(SUM(amount), 0) AS money_spent
+FROM
+    customers
+        LEFT JOIN
+    orders ON customers.id = orders.customer_id
+GROUP BY first_name , last_name;
+
+SELECT 
+    first_name, last_name, order_date, amount
+FROM
+    customers
+        RIGHT JOIN
+    orders ON customers.id = orders.customer_id;
+
+Delete Cascade (delete customers and orders without error messages)
+
+CREATE TABLE customers (
+    id INT PRIMARY KEY AUTO_INCREMENT,
+    first_name VARCHAR(50),
+    last_name VARCHAR(50),
+    email VARCHAR(50)
+);
+ 
+CREATE TABLE orders (
+    id INT PRIMARY KEY AUTO_INCREMENT,
+    order_date DATE,
+    amount DECIMAL(8 , 2 ),
+    customer_id INT,
+    FOREIGN KEY (customer_id)
+        REFERENCES customers (id)
+        ON DELETE CASCADE
+);
+
+Solutions for SECTION 13:
+
+CREATE TABLE students (
+    id INT PRIMARY KEY AUTO_INCREMENT,
+    first_name VARCHAR(50)
+);
+ 
+ 
+CREATE TABLE papers (
+    title VARCHAR(50),
+    grade INT,
+    student_id INT,
+    FOREIGN KEY (student_id)
+        REFERENCES students (id)
+);
+ 
+ 
+SELECT 
+    first_name, title, grade
+FROM
+    students
+        JOIN
+    papers ON papers.student_id = students.id
+ORDER BY grade DESC;
+ 
+ 
+ 
+SELECT 
+    first_name, title, grade
+FROM
+    students
+        LEFT JOIN
+    papers ON papers.student_id = students.id;
+ 
+ 
+ 
+SELECT 
+    first_name, IFNULL(title, 'MISSING'), IFNULL(grade, 0)
+FROM
+    students
+        LEFT JOIN
+    papers ON papers.student_id = students.id;
+ 
+ 
+ 
+SELECT 
+    first_name, IFNULL(AVG(grade), 0) AS average
+FROM
+    students
+        LEFT JOIN
+    papers ON students.id = papers.student_id
+GROUP BY first_name
+ORDER BY average DESC;
+ 
+ 
+ 
+SELECT 
+    first_name,
+    IFNULL(AVG(grade), 0) AS average,
+    CASE
+        WHEN IFNULL(AVG(grade), 0) >= 75 THEN 'passing'
+        ELSE 'failing'
+    END AS passing_status
+FROM
+    students
+        LEFT JOIN
+    papers ON students.id = papers.student_id
+GROUP BY first_name
+ORDER BY average DESC;
