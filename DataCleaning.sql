@@ -8,6 +8,7 @@ limit 5;
 -- 2. Standardize data and fix errors.
 -- 3. Look at null values and see what .
 -- 4. Remove any columns and rows that are not necessary - few ways.
+-- 5. Create a duplicate staging file to clean the data there but keep the raw data file untouched as well.
 
 create table layoffs_staging
 like layoffs;
