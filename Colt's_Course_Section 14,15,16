@@ -1,0 +1,422 @@
+Section 14:
+Joins for Many to Many
+
+SELECT 
+    title, rating
+FROM
+    series
+        JOIN
+    reviews ON series.id = reviews.series_id
+    limit 15;
+
+SELECT 
+    title, ROUND(AVG(rating), 2) AS avg_rating
+FROM
+    series
+        JOIN
+    reviews ON series.id = reviews.series_id
+GROUP BY title
+ORDER BY avg_rating;
+
+SELECT 
+    first_name, last_name, rating
+FROM
+    reviewers
+        JOIN
+    reviews ON reviews.reviewer_id = reviewers.id;
+
+SELECT 
+    title AS unreviewed_series
+FROM
+    series
+        LEFT JOIN
+    reviews ON series.id = reviews.series_id
+WHERE
+    rating IS NULL;
+ 
+ 
+SELECT 
+    title AS unreviewed_series
+FROM
+    reviews
+        RIGHT JOIN
+    series ON series.id = reviews.series_id
+WHERE
+    rating IS NULL;
+
+Have to put is null instead of where rating = null (won't work).
+
+SELECT 
+    genre, ROUND(AVG(rating), 2) AS avg_rating
+FROM
+    series
+        JOIN
+    reviews ON series.id = reviews.series_id
+GROUP BY genre;
+
+-- USING CASE 
+SELECT 
+    first_name,
+    last_name,
+    COUNT(rating) AS count,
+    IFNULL(MIN(rating), 0) AS min,
+    IFNULL(MAX(rating), 0) AS max,
+    ROUND(IFNULL(AVG(rating), 0), 2) AS average,
+    CASE
+        WHEN COUNT(rating) >= 10 THEN 'POWERUSER'
+        WHEN COUNT(rating) > 0 THEN 'ACTIVE'
+        ELSE 'INACTIVE'
+    END AS status
+FROM
+    reviewers
+        LEFT JOIN
+    reviews ON reviewers.id = reviews.reviewer_id
+GROUP BY first_name , last_name;
+ 
+-- USING IF 
+SELECT 
+    first_name,
+    last_name,
+    COUNT(rating) AS count,
+    IFNULL(MIN(rating), 0) AS min,
+    IFNULL(MAX(rating), 0) AS max,
+    ROUND(IFNULL(AVG(rating), 0), 2) AS average,
+    IF(COUNT(rating) > 0,
+        'ACTIVE',
+        'INACTIVE') AS status
+FROM
+    reviewers
+        LEFT JOIN
+    reviews ON reviewers.id = reviews.reviewer_id
+GROUP BY first_name , last_name;
+
+SELECT 
+    title,
+    rating,
+    CONCAT(first_name, ' ', last_name) AS reviewer
+FROM
+    reviews
+        INNER JOIN
+    series ON reviews.series_id = series.id
+        INNER JOIN
+    reviewers ON reviews.reviewer_id = reviewers.id;
+ 
+ 
+ 
+SELECT 
+    title,
+    rating,
+    CONCAT(first_name, ' ', last_name) AS reviewer
+FROM
+    series
+        INNER JOIN
+    reviews ON reviews.series_id = series.id
+        INNER JOIN
+    reviewers ON reviews.reviewer_id = reviewers.id;
+ 
+ 
+ 
+SELECT 
+    title,
+    rating,
+    CONCAT(first_name, ' ', last_name) AS reviewer
+FROM
+    reviewers
+        INNER JOIN
+    reviews ON reviews.reviewer_id = reviewers.id
+        INNER JOIN
+    series ON reviews.series_id = series.id;
+
+SECTION 15:
+
+-- INSTEAD OF TYPING THIS QUERY ALL THE TIME...
+SELECT 
+    title, released_year, genre, rating, first_name, last_name
+FROM
+    reviews
+        JOIN
+    series ON series.id = reviews.series_id
+        JOIN
+    reviewers ON reviewers.id = reviews.reviewer_id;
+ 
+-- WE CAN CREATE A VIEW:
+CREATE VIEW full_reviews AS
+SELECT title, released_year, genre, rating, first_name, last_name FROM reviews
+JOIN series ON series.id = reviews.series_id
+JOIN reviewers ON reviewers.id = reviews.reviewer_id;
+ 
+-- NOW WE CAN TREAT THAT VIEW AS A VIRTUAL TABLE 
+-- (AT LEAST WHEN IT COMES TO SELECTING)
+SELECT * FROM full_reviews;
+
+CREATE VIEW ordered_series AS
+SELECT * FROM series ORDER BY released_year;
+ 
+CREATE OR REPLACE VIEW ordered_series AS
+SELECT * FROM series ORDER BY released_year DESC;
+ 
+ALTER VIEW ordered_series AS
+SELECT * FROM series ORDER BY released_year;
+ 
+DROP VIEW ordered_series;
+
+SELECT 
+    title, 
+    AVG(rating),
+    COUNT(rating) AS review_count
+FROM full_reviews 
+GROUP BY title HAVING COUNT(rating) > 1;
+
+ROLLUP EXAMPLE
+
+SELECT 
+    title, AVG(rating)
+FROM
+    full_reviews
+GROUP BY title WITH ROLLUP;
+ 
+ 
+SELECT 
+    title, COUNT(rating)
+FROM
+    full_reviews
+GROUP BY title WITH ROLLUP;
+ 
+ 
+SELECT 
+    first_name, released_year, genre, AVG(rating)
+FROM
+    full_reviews
+GROUP BY released_year , genre , first_name WITH ROLLUP;
+
+Section 16:
+
+SELECT emp_no, department, salary, AVG(salary) OVER() FROM employees;
+ 
+SELECT 
+    emp_no, 
+    department, 
+    salary, 
+    MIN(salary) OVER(),
+    MAX(salary) OVER()
+FROM employees;
+    
+    
+SELECT 
+    emp_no, department, salary, MIN(salary), MAX(salary)
+FROM
+    employees;
+
+SELECT 
+    emp_no, 
+    department, 
+    salary, 
+    AVG(salary) OVER(PARTITION BY department) AS dept_avg,
+    AVG(salary) OVER() AS company_avg
+FROM employees;
+ 
+SELECT 
+    emp_no, 
+    department, 
+    salary, 
+    COUNT(*) OVER(PARTITION BY department) as dept_count
+FROM employees;
+ 
+SELECT 
+    emp_no, 
+    department, 
+    salary, 
+    SUM(salary) OVER(PARTITION BY department) AS dept_payroll,
+    SUM(salary) OVER() AS total_payroll
+FROM employees;
+
+SELECT 
+    emp_no, 
+    department, 
+    salary, 
+    SUM(salary) OVER(PARTITION BY department ORDER BY salary) AS rolling_dept_salary,
+    SUM(salary) OVER(PARTITION BY department) AS total_dept_salary
+FROM employees;
+ 
+SELECT 
+    emp_no, 
+    department, 
+    salary, 
+    MIN(salary) OVER(PARTITION BY department ORDER BY salary DESC) as rolling_min
+FROM employees;
+
+SELECT 
+    emp_no, 
+    department, 
+    salary,
+    ROW_NUMBER() OVER(PARTITION BY department ORDER BY SALARY DESC) as dept_row_number,
+    RANK() OVER(PARTITION BY department ORDER BY SALARY DESC) as dept_salary_rank,
+    RANK() OVER(ORDER BY salary DESC) as overall_rank,
+    DENSE_RANK() OVER(ORDER BY salary DESC) as overall_dense_rank,
+    ROW_NUMBER() OVER(ORDER BY salary DESC) as overall_num
+FROM employees ORDER BY overall_rank;
+
+SELECT 
+    emp_no, 
+    department, 
+    salary,
+    NTILE(4) OVER(PARTITION BY department ORDER BY salary DESC) AS dept_salary_quartile,
+	NTILE(4) OVER(ORDER BY salary DESC) AS salary_quartile
+FROM employees;
+
+SELECT 
+    emp_no, 
+    department, 
+    salary,
+    FIRST_VALUE(emp_no) OVER(PARTITION BY department ORDER BY salary DESC) as highest_paid_dept,
+    FIRST_VALUE(emp_no) OVER(ORDER BY salary DESC) as highest_paid_overall
+FROM employees;
+
+SELECT 
+    emp_no, 
+    department, 
+    salary,
+    salary - LAG(salary) OVER(ORDER BY salary DESC) as salary_diff
+FROM employees;
+ 
+SELECT 
+    emp_no, 
+    department, 
+    salary,
+    salary - LAG(salary) OVER(PARTITION BY department ORDER BY salary DESC) as dept_salary_diff
+FROM employees;
+
+INSTAGRAM PROJECT:
+
+create database instagram
+
+use instagram
+
+desbribe ()
+
+CREATE TABLE users (
+    id INTEGER AUTO_INCREMENT PRIMARY KEY,
+    username VARCHAR(255) UNIQUE NOT NULL,
+    created_at TIMESTAMP DEFAULT NOW()
+);
+
+CREATE TABLE photos (
+    id INTEGER AUTO_INCREMENT PRIMARY KEY,
+    image_url VARCHAR(255) NOT NULL,
+    user_id INTEGER NOT NULL,
+    created_at TIMESTAMP DEFAULT NOW(),
+    FOREIGN KEY(user_id) REFERENCES users(id)
+);
+
+CREATE TABLE comments (
+    id INTEGER AUTO_INCREMENT PRIMARY KEY,
+    comment_text VARCHAR(255) NOT NULL,
+    photo_id INTEGER NOT NULL,
+    user_id INTEGER NOT NULL,
+    created_at TIMESTAMP DEFAULT NOW(),
+    FOREIGN KEY(photo_id) REFERENCES photos(id),
+    FOREIGN KEY(user_id) REFERENCES users(id)
+);
+
+CREATE TABLE likes (
+    user_id INTEGER NOT NULL,
+    photo_id INTEGER NOT NULL,
+    created_at TIMESTAMP DEFAULT NOW(),
+    FOREIGN KEY(user_id) REFERENCES users(id),
+    FOREIGN KEY(photo_id) REFERENCES photos(id),
+    PRIMARY KEY(user_id, photo_id)
+);
+
+CREATE TABLE follows (
+    follower_id INTEGER NOT NULL,
+    followee_id INTEGER NOT NULL,
+    created_at TIMESTAMP DEFAULT NOW(),
+    FOREIGN KEY(follower_id) REFERENCES users(id),
+    FOREIGN KEY(followee_id) REFERENCES users(id),
+    PRIMARY KEY(follower_id, followee_id)
+);
+
+CREATE TABLE tags (
+  id INTEGER AUTO_INCREMENT PRIMARY KEY,
+  tag_name VARCHAR(255) UNIQUE,
+  created_at TIMESTAMP DEFAULT NOW()
+);
+
+CREATE TABLE photo_tags (
+    photo_id INTEGER NOT NULL,
+    tag_id INTEGER NOT NULL,
+    FOREIGN KEY(photo_id) REFERENCES photos(id),
+    FOREIGN KEY(tag_id) REFERENCES tags(id),
+    PRIMARY KEY(photo_id, tag_id)
+);
+
+-- 1. Finding 5 oldest users
+
+SELECT * FROM users
+ORDER BY created_at
+LIMIT 5;
+
+SELECT 
+    DAYNAME(created_at) AS day,
+    COUNT(*) AS total
+FROM users
+GROUP BY day
+ORDER BY total DESC
+LIMIT 2;
+
+select username, photos.user_id, photos.created_at from users
+left join photos
+on photos.user_id = users.id
+where photos.created_at is null
+
+SELECT username
+FROM users
+LEFT JOIN photos
+    ON users.id = photos.user_id
+WHERE photos.id IS NULL;
+
+FIND MOST LIKES AND THE USER OF THOSE LIKES:
+
+SELECT 
+    username,
+    photos.id,
+    photos.image_url, 
+    COUNT(*) AS total
+FROM photos
+INNER JOIN likes
+    ON likes.photo_id = photos.id
+INNER JOIN users
+    ON photos.user_id = users.id
+GROUP BY photos.id
+ORDER BY total DESC
+LIMIT 1;
+
+-- num of photos / num of users (avg posts per user)
+
+SELECT (SELECT Count(*) FROM photos) / (SELECT Count(*) FROM users) AS avg; 
+
+sort of another option is this:
+
+select
+(SELECT Count(*) FROM photos) / (SELECT Count(*) FROM users) AS avg from photos
+join users
+on users.id = photos.user_id
+group by username;
+
+SELECT tags.tag_name, 
+       Count(*) AS total 
+FROM   photo_tags 
+       JOIN tags 
+         ON photo_tags.tag_id = tags.id 
+GROUP  BY tags.id 
+ORDER  BY total DESC 
+LIMIT  5; 
+
+SELECT username, 
+       Count(*) AS num_likes 
+FROM   users 
+       INNER JOIN likes 
+               ON users.id = likes.user_id 
+GROUP  BY likes.user_id 
+HAVING num_likes = (SELECT Count(*) 
+                    FROM   photos); 
