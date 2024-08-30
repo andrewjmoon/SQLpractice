@@ -1,0 +1,246 @@
+Section 8: Refining Selections
+
+use book_shop;
+select * from books;
+select distinct author_lname from books;
+SELECT DISTINCT CONCAT(author_fname,' ', author_lname) as full_name FROM books;
+select author_lname, released_year, title, pages from books order by pages limit 2, 10;
+select title, author_fname, author_lname from books where author_fname like '%da';
+select title from books where title like'%stories%';
+select title, pages from books order by pages desc limit 1;
+select CONCAT(title, ' - ', released_year) as Summary from books order by released_year desc limit 3;
+select title, author_lname from books where author_lname like'% %';
+SELECT 
+    title, released_year, stock_quantity
+FROM
+    books
+ORDER BY stock_quantity ASC
+LIMIT 3;
+select title, author_lname from books order by author_lname, title;
+select UPPER(CONCAT('MY FAVORITE AUTHOR IS ', author_fname, ' ', author_lname, '!!!')) as yell from books order by author_lname;
+
+Section 9: 
+
+select * from books;
+select distinct author_fname from books;
+select count(author_fname) from books;
+select count(distinct author_fname) from books;
+select count(*) from books where title LIKE '%the%';
+
+SELECT COUNT(*) FROM books;
+ 
+SELECT COUNT(author_lname) FROM books;
+ 
+SELECT COUNT(DISTINCT author_lname) FROM books;
+
+SELECT author_lname, COUNT(*) 
+FROM books
+GROUP BY author_lname;
+ 
+SELECT 
+    author_lname, COUNT(*) AS books_written
+FROM
+    books
+GROUP BY author_lname
+ORDER BY books_written DESC;
+
+select author_lname, count(*) as books_written from books 
+group by author_lname order by books_written desc;
+
+select released_year, count(*) as YearBreakdown from books 
+group by released_year order by YearBreakdown;
+
+Subqueries:
+
+SELECT title, pages FROM books
+WHERE pages = (SELECT MAX(pages) FROM books);
+ 
+SELECT MIN(released_year) FROM books;
+ 
+SELECT title, released_year FROM books 
+WHERE released_year = (SELECT MIN(released_year) FROM books);
+
+Group By Multiple Columns:
+
+SELECT author_fname, author_lname, COUNT(*) 
+FROM books 
+GROUP BY author_lname, author_fname;
+ 
+ 
+SELECT CONCAT(author_fname, ' ', author_lname) AS author,  COUNT(*)
+FROM books
+GROUP BY author;
+
+MAX & MIN Group By:
+
+SELECT author_lname, MIN(released_year) FROM books GROUP BY author_lname;
+ 
+SELECT author_lname, MIN(released_year), MAX(released_year) FROM books GROUP BY author_lname;
+
+SELECT 
+author_lname, 
+author_fname,
+COUNT(*) as books_written,
+MIN(released_year) as earliest_release, 
+MAX(released_year) as latest_release,
+MAX(pages) as longest_book
+FROM books GROUP BY author_lname, author_fname;
+
+SUM:
+
+SELECT SUM(pages) FROM books;
+ 
+ 
+SELECT author_lname, COUNT(*), SUM(pages)
+FROM books
+GROUP BY author_lname;
+
+AVG: 
+
+select avg(released_year) from books;
+
+SELECT 
+    released_year, AVG(stock_quantity), COUNT(*)
+FROM
+    books
+GROUP BY released_year
+ORDER BY released_year;
+
+Solutions for Section 9:
+
+select count(*) from books;
+
+select released_year, count(*) from books group by released_year;
+
+select sum(stock_quantity) from books;
+
+select avg(released_year), CONCAT(author_fname, ' ', author_lname) AS author from books group by author;
+
+SELECT 
+    CONCAT(author_fname, ' ', author_lname) AS author, pages
+FROM
+    books
+WHERE
+    pages = (SELECT MAX(pages) FROM books);
+    
+SELECT 
+    released_year as year, COUNT(*) as '# of books', AVG(pages) as AVG_PAGES
+FROM
+    books
+GROUP BY released_year
+ORDER BY released_year;
+
+SECTION 10: Revisiting Data Types
+
+create table people (
+	name VARCHAR(100),
+    birthdate DATE,
+    birthtime TIME,
+    birthdt DATETIME);
+
+INSERT INTO people (name, birthdate, birthtime, birthdt)
+VALUES ('Elton', '2000-12-25', '11:00:00', '2000-12-25 11:00:00');
+
+INSERT INTO people (name, birthdate, birthtime, birthdt)
+VALUES ('Lulu', '1985-04-11', '9:45:10', '1985-04-11 9:45:10');
+
+SELECT CURTIME();
+ 
+SELECT CURDATE();
+ 
+SELECT NOW();
+ 
+INSERT INTO people (name, birthdate, birthtime, birthdt)
+VALUES ('Hazel', CURDATE(), CURTIME(), NOW());
+
+SELECT 
+    birthdate,
+    DAY(birthdate),
+    DAYOFWEEK(birthdate),
+    DAYOFYEAR(birthdate)
+FROM people;
+ 
+SELECT 
+    birthdate,
+    MONTHNAME(birthdate),
+    YEAR(birthdate)
+FROM people;
+
+SELECT 
+    birthtime,
+    HOUR(birthtime),
+    MINUTE(birthtime)
+FROM people;
+ 
+SELECT 
+    birthdt,
+    MONTH(birthdt),
+    DAY(birthdt),
+    HOUR(birthdt),
+    MINUTE(birthdt)
+FROM people;
+
+SELECT birthdate, DATE_FORMAT(birthdate, '%a %b %D') FROM people;
+ 
+SELECT birthdt, DATE_FORMAT(birthdt, '%H:%i') FROM people;
+ 
+SELECT birthdt, DATE_FORMAT(birthdt, 'BORN ON: %r') FROM people;
+
+CREATE TABLE captions (
+  text VARCHAR(150),
+  created_at TIMESTAMP default CURRENT_TIMESTAMP
+);
+ 
+CREATE TABLE captions2 (
+  text VARCHAR(150),
+  created_at TIMESTAMP default CURRENT_TIMESTAMP,
+  updated_at TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+);
+
+Solutions to Sec. 10
+
+-- What's a good use case for CHAR?
+ 
+-- Used for text that we know has a fixed length, e.g., State abbreviations, 
+-- abbreviated company names, etc.
+ 
+CREATE TABLE inventory (
+    item_name VARCHAR(100),
+    price DECIMAL(8,2),
+    quantity INT
+);
+ 
+-- What's the difference between DATETIME and TIMESTAMP?
+ 
+-- They both store datetime information, but there's a difference in the range, 
+-- TIMESTAMP has a smaller range. TIMESTAMP also takes up less space. 
+-- TIMESTAMP is used for things like meta-data about when something is created
+-- or updated.
+ 
+ 
+SELECT CURTIME();
+ 
+SELECT CURDATE();
+ 
+SELECT DAYOFWEEK(CURDATE());
+SELECT DAYOFWEEK(NOW());
+SELECT DATE_FORMAT(NOW(), '%w') + 1;
+ 
+SELECT DAYNAME(NOW());
+SELECT DATE_FORMAT(NOW(), '%W');
+ 
+SELECT DATE_FORMAT(CURDATE(), '%m/%d/%Y');
+ 
+SELECT DATE_FORMAT(NOW(), '%M %D at %k:%i');
+ 
+CREATE TABLE tweets(
+    content VARCHAR(140),
+    username VARCHAR(20),
+    created_at TIMESTAMP DEFAULT NOW()
+);
+ 
+INSERT INTO tweets (content, username) VALUES('this is my first tweet', 'coltscat');
+SELECT * FROM tweets;
+ 
+INSERT INTO tweets (content, username) VALUES('this is my second tweet', 'coltscat');
+SELECT * FROM tweets;
