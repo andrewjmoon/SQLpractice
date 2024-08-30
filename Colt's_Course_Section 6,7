@@ -1,0 +1,193 @@
+SECTION 6:
+
+SOLUTION CODE-
+
+CREATE DATABASE shirts_db;
+ 
+USE shirts_db;
+ 
+CREATE TABLE shirts (
+    shirt_id INT AUTO_INCREMENT PRIMARY KEY,
+    article VARCHAR(50),
+    color VARCHAR(50),
+    shirt_size VARCHAR(5),
+    last_worn INT
+);
+ 
+DESC shirts;
+ 
+INSERT INTO shirts (article, color, shirt_size, last_worn)  
+VALUES 
+	('t-shirt', 'white', 'S', 10),
+	('t-shirt', 'green', 'S', 200),
+	('polo shirt', 'black', 'M', 10),
+	('tank top', 'blue', 'S', 50),
+	('t-shirt', 'pink', 'S', 0),
+	('polo shirt', 'red', 'M', 5),
+	('tank top', 'white', 'S', 200),
+	('tank top', 'blue', 'M', 15);
+ 
+INSERT INTO shirts (article, color, shirt_size, last_worn)
+VALUES ('polo shirt','purple', 'M', 50);
+
+SELECT article, color FROM shirts;
+ 
+SELECT * FROM shirts WHERE shirt_size='M';
+ 
+SELECT article, color, shirt_size, last_worn FROM shirts WHERE shirt_size='M';
+
+SOLUTION CODE-
+
+UPDATE shirts 
+SET 
+    shirt_size = 'L'
+WHERE
+    article = 'polo shirt';
+    
+    
+UPDATE shirts 
+SET 
+    last_worn = 0
+WHERE
+    last_worn = 15;
+    
+    
+UPDATE shirts 
+SET 
+    color = 'off white',
+    shirt_size = 'XS'
+WHERE
+    color = 'white';
+
+SELECT * FROM shirts WHERE last_worn=200;
+ 
+DELETE FROM shirts WHERE last_worn=200;
+ 
+ 
+SELECT * FROM shirts WHERE article='tank top';
+ 
+DELETE FROM shirts WHERE article='tank top';
+ 
+SECTION 7:
+
+CREATE TABLE books 
+	(
+		book_id INT AUTO_INCREMENT,
+		title VARCHAR(100),
+		author_fname VARCHAR(100),
+		author_lname VARCHAR(100),
+		released_year INT,
+		stock_quantity INT,
+		pages INT,
+		PRIMARY KEY(book_id)
+	);
+ 
+INSERT INTO books (title, author_fname, author_lname, released_year, stock_quantity, pages)
+VALUES
+('The Namesake', 'Jhumpa', 'Lahiri', 2003, 32, 291),
+('Norse Mythology', 'Neil', 'Gaiman',2016, 43, 304),
+('American Gods', 'Neil', 'Gaiman', 2001, 12, 465);
+
+CONCAT
+SELECT CONCAT('pi', 'ckle');
+ 
+SELECT CONCAT(author_fname,' ', author_lname) AS author_name FROM books;
+ 
+SELECT CONCAT_WS('-',title, author_fname, author_lname) FROM books;
+
+SUBSTRING
+SELECT SUBSTRING('Hello World', 1, 4);
+ 
+SELECT SUBSTRING('Hello World', 7);
+ 
+SELECT SUBSTRING('Hello World', -3);
+ 
+SELECT SUBSTRING(title, 1, 10) AS 'short title' FROM books;
+ 
+SELECT SUBSTR(title, 1, 10) AS 'short title' FROM books;
+
+SELECT CONCAT
+    (
+        SUBSTRING(title, 1, 10),
+        '...'
+    ) AS 'short title'
+FROM books;
+
+SELECT REPLACE('Hello World', 'Hell', '%$#@');
+ 
+SELECT REPLACE('Hello World', 'l', '7');
+ 
+SELECT REPLACE('Hello World', 'o', '0');
+ 
+SELECT REPLACE('HellO World', 'o', '*');
+ 
+SELECT
+  REPLACE('cheese bread coffee milk', ' ', ' and ');
+ 
+SELECT REPLACE(title, 'e ', '3') FROM books;
+ 
+SELECT REPLACE(title, ' ', '-') FROM books;
+
+SELECT REVERSE('Hello World');
+ 
+SELECT REVERSE('meow meow');
+ 
+SELECT REVERSE(author_fname) FROM books;
+ 
+SELECT CONCAT('woof', REVERSE('woof'));
+ 
+SELECT CONCAT(author_fname, REVERSE(author_fname)) FROM books;
+
+SELECT CHAR_LENGTH('Hello World');
+ 
+SELECT CHAR_LENGTH(title) as length, title FROM books;
+ 
+SELECT author_lname, CHAR_LENGTH(author_lname) AS 'length' FROM books;
+ 
+SELECT CONCAT(author_lname, ' is ', CHAR_LENGTH(author_lname), ' characters long') FROM books;
+
+SELECT UPPER('Hello World');
+ 
+SELECT LOWER('Hello World');
+ 
+SELECT UPPER(title) FROM books;
+ 
+SELECT CONCAT('MY FAVORITE BOOK IS ', UPPER(title)) FROM books;
+ 
+SELECT CONCAT('MY FAVORITE BOOK IS ', LOWER(title)) FROM books;
+
+SELECT INSERT('Hello Bobby', 6, 0, 'There'); 
+ 
+SELECT LEFT('omghahalol!', 3);
+ 
+SELECT RIGHT('omghahalol!', 4);
+ 
+SELECT REPEAT('ha', 4);
+ 
+SELECT TRIM('  pickle  ');
+
+SOLUTION CODE -
+
+SELECT REVERSE(UPPER('Why does my cat look at me with such hatred?'));
+ 
+SELECT REPLACE(title, ' ', '->') AS title FROM books;
+ 
+SELECT 
+    author_lname AS forwards, REVERSE(author_lname) AS backwards
+FROM
+    books;
+    
+ 
+SELECT UPPER(CONCAT(author_fname, ' ', author_lname)) AS 'full name in caps' FROM books;
+ 
+ 
+SELECT CONCAT(title, ' was released in ', released_year) AS blurb FROM books;
+ 
+SELECT title, CHAR_LENGTH(title) AS character_count FROM books;
+ 
+SELECT 
+    CONCAT(SUBSTR(title, 1, 10), '...') AS short_title,
+    CONCAT(author_lname, ',', author_fname) AS author,
+    CONCAT(stock_quantity, ' in stock') AS quantity
+FROM
+    books;
